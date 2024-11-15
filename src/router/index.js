@@ -6,7 +6,6 @@ import Register from "@/components/Register.vue";
 import AuthPage from "@/views/AuthPage.vue";
 import ForgotPassword from "@/components/ForgotPassword.vue";
 import HomePage from "@/views/HomePage.vue";
-import DocgiaManagement from "@/views/DocgiaManagement.vue";
 import SachManagement from "@/views/SachManagement.vue";
 import MuonManagement from "@/views/MuonManagement.vue";
 import MuonHistory from "@/views/MuonHistory.vue";
@@ -53,11 +52,6 @@ const routes = [
                 path: "sach-management",
                 name: "sach-management",
                 component: SachManagement,
-            },
-            {
-                path: "docgia-management",
-                name: "docgia-management",
-                component: DocgiaManagement,
             },
             {
                 path: "muon-history",

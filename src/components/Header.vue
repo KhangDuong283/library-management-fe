@@ -54,17 +54,6 @@
             >
               Lịch sử mượn sách
             </v-btn>
-
-            <!-- Quản lý độc giả -->
-            <v-btn
-              v-if="role === 'admin'"
-              text
-              :class="{ 'v-btn--active': $route.path === '/docgia-management' }"
-              class="text-white"
-              @click="goToReaders"
-            >
-              Quản lý độc giả
-            </v-btn>
           </v-col>
 
           <!-- Hiển thị tên người dùng và nút logout -->

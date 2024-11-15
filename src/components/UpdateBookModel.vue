@@ -2,6 +2,7 @@
   <div
     v-if="isVisible"
     class="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center"
+    style="z-index: 9999"
   >
     <div class="bg-white p-6 rounded-md shadow-lg w-96">
       <h2 class="text-xl font-bold mb-4">Cập nhật thông tin sách</h2>

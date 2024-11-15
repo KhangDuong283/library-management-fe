@@ -2,17 +2,24 @@
   <div class="book-management-page p-4">
     <!-- Tiêu đề chính -->
     <div class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Quản lý sách</h1>
-    </div>
+      <h1 class="text-3xl font-bold text-gray-800" v-if="role === `admin`">
+        Quản lý sách
+      </h1>
 
+      <h1 class="text-3xl font-bold text-gray-800" v-if="role === `user`">
+        Thư viện sách
+      </h1>
+    </div>
     <!-- Nút thêm sách mới -->
     <div class="flex justify-between items-center mb-4">
-      <v-btn color="primary" @click="addNewBook">Thêm sách mới</v-btn>
+      <v-btn color="primary" @click="addNewBook" v-if="role === `admin`"
+        >Thêm sách mới</v-btn
+      >
       <input
         v-model="searchQuery"
         type="text"
         placeholder="Tìm kiếm sách"
-        class="ml-4 p-2 border rounded-md text-sm w-64"
+        class="ml-4 p-2 border rounded-md text-sm w-64 bg-gray-100"
         style="z-index: 10"
       />
     </div>
@@ -26,6 +33,7 @@
           class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400"
         >
           <tr>
+            <th scope="col" class="px-6 py-3 text-center text-sm">Mã sách</th>
             <th scope="col" class="px-6 py-3 text-center text-sm">Tên sách</th>
             <th scope="col" class="px-6 py-3 text-center text-sm">Số quyển</th>
             <th scope="col" class="px-6 py-3 text-center text-sm">
@@ -35,17 +43,37 @@
             <th scope="col" class="px-6 py-3 text-center text-sm">
               Nhà xuất bản
             </th>
-            <th scope="col" class="px-6 py-3 text-center text-sm">Hành động</th>
+            <th
+              v-if="role === 'admin'"
+              scope="col"
+              class="px-6 py-3 text-center text-sm"
+            >
+              Hành động
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="book in books" :key="book.id">
-            <td class="px-6 py-4 text-center">{{ book.tensach }}</td>
+          <tr v-for="book in filteredBooks" :key="book.id">
+            <td
+              @click="copyToClipboard(book._id, 'ID sách')"
+              class="px-6 py-4 text-center cursor-pointer transform transition-all duration-300 hover:scale-105 hover:font-bold"
+            >
+              ...{{ book._id.slice(-6) }}
+            </td>
+
+            <td
+              class="px-6 py-4 text-center cursor-pointer transform transition-all duration-300 hover:scale-105 hover:font-bold"
+              @click="copyToClipboard(book.tensach, 'tên sách')"
+            >
+              {{ book.tensach.split(" ").slice(0, 8).join(" ")
+              }}{{ book.tensach.split(" ").length > 8 ? "..." : "" }}
+            </td>
+
             <td class="px-6 py-4 text-center">{{ book.soquyen }}</td>
             <td class="px-6 py-4 text-center">{{ book.namxuatban }}</td>
             <td class="px-6 py-4 text-center">{{ book.tacgia }}</td>
             <td class="px-6 py-4 text-center">{{ book.nhaxuatban.tennxb }}</td>
-            <td class="px-6 py-4 text-center">
+            <td class="px-6 py-4 text-center" v-if="role === 'admin'">
               <div class="flex justify-center">
                 <v-btn
                   small
@@ -103,6 +131,7 @@ export default {
       isModalVisible: false, // Điều khiển hiển thị modal cập nhật sách
       isAddBookModalVisible: false, // Điều khiển hiển thị modal thêm sách
       selectedBook: {}, // Thông tin sách được chọn để cập nhật
+      role: JSON.parse(localStorage.getItem("user")).role,
     };
   },
 
@@ -184,6 +213,70 @@ export default {
         console.error("Lỗi khi xóa sách:", error);
       }
     },
+
+    copyToClipboard(text, field) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          const toast = useToast();
+          toast.success("Đã sao chép " + field + " vào clipboard", {
+            timeout: 1500,
+          });
+        })
+        .catch((err) => {
+          console.error("Không thể sao chép " + field + ": ", err);
+        });
+    },
+  },
+  computed: {
+    filteredBooks() {
+      return this.books.filter((book) => {
+        // Tìm kiếm theo ID nếu searchQuery là ID
+        if (book._id.toLowerCase().includes(this.searchQuery.toLowerCase())) {
+          return true;
+        }
+
+        // Tìm kiếm theo tên sách nếu searchQuery là tên sách
+        if (
+          book.tensach.toLowerCase().includes(this.searchQuery.toLowerCase())
+        ) {
+          return true;
+        }
+
+        // Tìm kiếm theo tên sách nếu searchQuery là tên tác giả
+        if (
+          book.tacgia.toLowerCase().includes(this.searchQuery.toLowerCase())
+        ) {
+          return true;
+        }
+
+        // Tìm kiếm theo tên sách nếu searchQuery là tên nhà xuất bản
+        if (
+          book.nhaxuatban.tennxb
+            .toLowerCase()
+            .includes(this.searchQuery.toLowerCase())
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+    },
   },
 };
 </script>
+
+<style scoped>
+td {
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+}
+tr {
+  transition: background-color 0.3s;
+}
+
+tr:hover {
+  background-color: #e9e9e98c; /* Màu nền đậm hơn khi hover vào ô */
+}
+</style>
