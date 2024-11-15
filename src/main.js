@@ -32,7 +32,7 @@ app.use(router);
 app.use(vuetify);
 app.use(Toast, {
     position: POSITION.TOP_CENTER,
-    timeout: 2000,
+    timeout: 3000,
     closeOnClick: true,
 });
 

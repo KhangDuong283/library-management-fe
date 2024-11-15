@@ -7,10 +7,7 @@
 
     <!-- Nút thêm sách mới -->
     <div class="flex justify-between items-center mb-4">
-      <!-- Nút Thêm sách mới -->
       <v-btn color="primary" @click="addNewBook">Thêm sách mới</v-btn>
-
-      <!-- Input tìm kiếm -->
       <input
         v-model="searchQuery"
         type="text"
@@ -25,7 +22,6 @@
       <table
         class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400"
       >
-        <!-- Header -->
         <thead
           class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400"
         >
@@ -42,7 +38,6 @@
             <th scope="col" class="px-6 py-3 text-center text-sm">Hành động</th>
           </tr>
         </thead>
-        <!-- Dữ liệu trong bảng -->
         <tbody>
           <tr v-for="book in books" :key="book.id">
             <td class="px-6 py-4 text-center">{{ book.tensach }}</td>
@@ -68,25 +63,55 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Modal Update Book -->
+    <UpdateBookModal
+      :isVisible="isModalVisible"
+      :book="selectedBook"
+      :nhaxuatbanList="nhaxuatbanList"
+      @close="closeModal"
+      @update="submitUpdate"
+    />
+
+    <!-- Modal Add Book -->
+    <AddBookModal
+      :isVisible="isAddBookModalVisible"
+      :nhaxuatbanList="nhaxuatbanList"
+      @close="closeAddBookModal"
+      @add="submitAddBook"
+    />
   </div>
 </template>
 
 <script>
 import SachService from "@/services/sach.service";
 import { useToast } from "vue-toastification";
+import NhaxuatbanService from "@/services/nhaxuatban.service";
+import UpdateBookModal from "../components/UpdateBookModel.vue";
+import AddBookModal from "../components/AddBookModel.vue";
 
 export default {
+  components: {
+    UpdateBookModal,
+    AddBookModal,
+  },
   data() {
     return {
-      books: [],
+      books: [], // Danh sách sách
+      nhaxuatbanList: [], // Danh sách nhà xuất bản
       searchQuery: "", // Biến lưu trữ nội dung tìm kiếm
+      isModalVisible: false, // Điều khiển hiển thị modal cập nhật sách
+      isAddBookModalVisible: false, // Điều khiển hiển thị modal thêm sách
+      selectedBook: {}, // Thông tin sách được chọn để cập nhật
     };
   },
+
   mounted() {
     this.fetchBooks();
+    this.fetchNhaxuatbanList();
   },
+
   methods: {
-    // Lấy danh sách sách từ API
     async fetchBooks() {
       try {
         const data = await SachService.getAll();
@@ -96,37 +121,69 @@ export default {
       }
     },
 
-    async addNewBook() {
-      // Logic thêm sách mới
+    async fetchNhaxuatbanList() {
+      try {
+        const data = await NhaxuatbanService.getAll();
+        this.nhaxuatbanList = data;
+      } catch (error) {
+        console.error("Lỗi khi gọi API lấy nhà xuất bản:", error);
+      }
     },
 
-    async updateBook(target) {
+    updateBook(book) {
+      this.selectedBook = { ...book };
+      this.isModalVisible = true;
+    },
+
+    closeModal() {
+      this.isModalVisible = false;
+      this.selectedBook = {}; // Reset dữ liệu
+    },
+
+    async submitUpdate(updatedBook) {
       try {
+        let parseBook = JSON.parse(JSON.stringify(updatedBook));
+        parseBook.manxb = parseBook.nhaxuatban._id;
+        await SachService.update(updatedBook._id, parseBook);
+        this.fetchBooks();
+        this.closeModal();
       } catch (error) {
         console.error("Lỗi khi cập nhật sách:", error);
       }
-      console.log("Cập nhật sách:", target);
+    },
+
+    addNewBook() {
+      this.isAddBookModalVisible = true;
+    },
+
+    closeAddBookModal() {
+      this.isAddBookModalVisible = false;
+    },
+
+    async submitAddBook(newBook) {
+      try {
+        let parseBook = JSON.parse(JSON.stringify(newBook));
+        parseBook.manxb = parseBook.nhaxuatban._id;
+        parseBook.nhaxuatban = null;
+        console.log(parseBook);
+        await SachService.create(parseBook);
+        this.fetchBooks(); // Cập nhật lại danh sách sách
+        this.closeAddBookModal();
+      } catch (error) {
+        console.error("Lỗi khi thêm sách:", error);
+      }
     },
 
     async deleteBook(target) {
       const toast = useToast();
       try {
-        const confirmDelete = await SachService.delete(target._id);
-        if (confirmDelete) {
-          toast.success("Xóa sách thành công!");
-          this.fetchBooks();
-        }
+        await SachService.delete(target._id);
+        toast.success("Xóa '" + target.tensach + "' thành công ");
+        this.fetchBooks();
       } catch (error) {
-        toast.error("Lỗi khi xóa sách:");
+        console.error("Lỗi khi xóa sách:", error);
       }
     },
   },
 };
 </script>
-
-<style scoped>
-.book-management-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-</style>
