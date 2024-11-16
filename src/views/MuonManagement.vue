@@ -39,6 +39,7 @@
             <th scope="col" class="px-6 py-3 text-center">Tên tên sách</th>
             <th scope="col" class="px-6 py-3 text-center">Ngày mượn</th>
             <th scope="col" class="px-6 py-3 text-center">Ngày trả</th>
+            <th scope="col" class="px-6 py-3 text-center">Ngày hẹn trả</th>
             <th scope="col" class="px-6 py-3 text-center">Trạng thái</th>
             <th scope="col" class="px-6 py-3 text-center">Hành động</th>
           </tr>
@@ -72,32 +73,94 @@
             </td>
 
             <td class="px-6 py-4 text-center">
+              {{ formatTime(record.ngayHenTra) }}
+            </td>
+
+            <td class="px-6 py-4 text-center">
               <span
                 :class="{
                   'text-orange-400 font-bold':
                     getStatus(record) === 'Đang mượn' && !isLate(record),
                   'text-green-600 font-bold': getStatus(record) === 'Đã trả',
                   'text-red-600 font-bold': getStatus(record) === 'Trả muộn',
+                  'text-blue-600 font-bold':
+                    getStatus(record) === 'Yêu cầu gia hạn',
                 }"
               >
                 {{ getStatus(record) }}
+                <template v-if="getLateDays(record) > 0">
+                  ({{ getLateDays(record) }} ngày)
+                </template>
               </span>
             </td>
 
-            <td class="px-6 py-4 text-center">
+            <td class="px-6 py-4 text-center" v-if="role === 'admin'">
+              <!-- Hiển thị nút "Duyệt trả sách" nếu trạng thái là Đang mượn hoặc Trả muộn -->
               <v-btn
                 small
                 color="green darken-2"
                 @click="approveReturn(record)"
                 style="font-size: 0.7rem; font-weight: bold"
                 v-if="
-                  getStatus(record) === 'Đang mượn' ||
-                  getStatus(record) === 'Trả muộn'
+                  (getStatus(record) === 'Đang mượn' ||
+                    getStatus(record) === 'Trả muộn') &&
+                  getStatus(record) !== 'Yêu cầu gia hạn'
                 "
               >
                 Duyệt trả sách
               </v-btn>
+
+              <!-- Hiển thị nút Đồng ý và Hủy nếu trạng thái là Yêu cầu gia hạn -->
+              <div
+                v-else-if="getStatus(record) === 'Yêu cầu gia hạn'"
+                class="flex items-center justify-center space-x-2"
+              >
+                <!-- Nút Hủy -->
+                <v-btn
+                  small
+                  color="red"
+                  @click="rejectRequestExtendBorrow(record)"
+                  style="font-size: 0.7rem; font-weight: bold"
+                >
+                  Hủy
+                </v-btn>
+
+                <!-- Nút Đồng ý -->
+                <v-btn
+                  small
+                  color="yellow"
+                  @click="acceptRequestExtendBorrow(record)"
+                  style="font-size: 0.7rem; font-weight: bold"
+                >
+                  Đồng ý
+                </v-btn>
+              </div>
+
+              <!-- Hiển thị trạng thái Đã xử lý nếu không khớp điều kiện -->
               <span v-else class="text-gray-400">Đã xử lý</span>
+            </td>
+
+            <td class="px-6 py-4 text-center" v-if="role === 'user'">
+              <v-btn
+                small
+                color="secondary"
+                @click="requestExtendBorrowing(record)"
+                style="font-size: 0.7rem; font-weight: bold"
+                v-if="
+                  (getStatus(record) === 'Đang mượn' ||
+                    getStatus(record) === 'Trả muộn') &&
+                  getStatus(record) !== 'Yêu cầu gia hạn'
+                "
+              >
+                Yêu cầu gia hạn
+              </v-btn>
+
+              <span
+                v-else-if="getStatus(record) === 'Yêu cầu gia hạn'"
+                class="text-gray-400"
+              >
+                Đã yêu cầu gia hạn
+              </span>
             </td>
           </tr>
         </tbody>
@@ -111,9 +174,12 @@ import MuonService from "@/services/muon.service";
 
 export default {
   data() {
+    const today = new Date().toISOString().split("T")[0];
     return {
       borrowRecords: [],
       searchQuery: "",
+      role: JSON.parse(localStorage.getItem("user")).role,
+      userId: JSON.parse(localStorage.getItem("user"))._id,
     };
   },
 
@@ -125,7 +191,14 @@ export default {
     async fetchBorrowRecords() {
       try {
         const data = await MuonService.getAll();
-        this.borrowRecords = data;
+
+        if (this.role === "user") {
+          this.borrowRecords = data.filter(
+            (record) => record.docGiaInfo._id === this.userId
+          );
+        } else {
+          this.borrowRecords = data;
+        }
       } catch (error) {
         console.error("Lỗi khi gọi API lấy danh sách mượn trả:", error);
       }
@@ -167,6 +240,9 @@ export default {
       if (this.isLate(record)) {
         return "Trả muộn";
       }
+      if (record.status === "Yêu cầu gia hạn") {
+        return "Yêu cầu gia hạn";
+      }
       return record.status === "Đã trả" ? "Đã trả" : "Đang mượn";
     },
 
@@ -180,6 +256,59 @@ export default {
 
     goToAddMuonSachPage() {
       this.$router.push({ name: "them-muon-sach" });
+    },
+
+    getLateDays(record) {
+      const today = new Date(); // Ngày hiện tại
+      const dueDate = new Date(record.ngayHenTra); // Ngày hẹn trả
+
+      // Nếu chưa trả và quá hạn, tính số ngày muộn
+      if (today > dueDate && record.status === "Đang mượn") {
+        const diffTime = today - dueDate; // Sự chênh lệch tính bằng milliseconds
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24)); // Đổi sang ngày
+      }
+
+      return 0; // Không muộn nếu chưa tới ngày hoặc đã trả
+    },
+
+    async requestExtendBorrowing(record) {
+      try {
+        const recordCopy = JSON.parse(JSON.stringify(record));
+        await MuonService.requestExtendBorrow(recordCopy._id);
+        this.fetchBorrowRecords();
+      } catch (error) {
+        console.error("Lỗi khi yêu cầu gia hạn mượn sách:", error);
+      }
+    },
+
+    async extendBorrowing(record) {
+      try {
+        const recordCopy = JSON.parse(JSON.stringify(record));
+        await MuonService.extendBorrow(recordCopy._id);
+        this.fetchBorrowRecords();
+      } catch (error) {
+        console.error("Lỗi khi duyệt trả sách:", error);
+      }
+    },
+
+    async rejectRequestExtendBorrow(record) {
+      try {
+        const recordCopy = JSON.parse(JSON.stringify(record));
+        await MuonService.rejectRequestExtendBorrow(recordCopy._id);
+        this.fetchBorrowRecords();
+      } catch (error) {
+        console.error("Lỗi khi duyệt trả sách:", error);
+      }
+    },
+
+    async acceptRequestExtendBorrow(record) {
+      try {
+        const recordCopy = JSON.parse(JSON.stringify(record));
+        await MuonService.acceptRequestExtendBorrow(recordCopy._id);
+        this.fetchBorrowRecords();
+      } catch (error) {
+        console.error("Lỗi khi duyệt trả sách:", error);
+      }
     },
   },
 

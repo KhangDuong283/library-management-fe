@@ -48,9 +48,9 @@
             <v-btn
               v-if="role === 'user'"
               text
-              :class="{ 'v-btn--active': $route.path === '/muon-history' }"
+              :class="{ 'v-btn--active': $route.path === '/muon-management' }"
               class="text-white font-bold"
-              @click="goToLendHistory"
+              @click="goToBorrowing"
             >
               Lịch sử mượn sách
             </v-btn>
@@ -131,10 +131,6 @@ export default {
     // Điều hướng đến Quản lý độc giả
     goToReaders() {
       this.$router.push("/docgia-management");
-    },
-    // Điều hướng đến Lịch sử mượn sách
-    goToLendHistory() {
-      this.$router.push("/muon-history");
     },
     goToAddMuonSach() {
       this.$router.push("/them-muon-sach");

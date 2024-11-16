@@ -24,6 +24,19 @@ class MuonService {
     async returnBook(id) {
         return (await this.api.put(`/return/${id}`)).data;
     }
+    async extendBorrow(id) {
+        return (await this.api.put(`/extend/${id}`)).data;
+    }
+    async requestExtendBorrow(id) {
+        console.log(id);
+        return (await this.api.put(`/request-extend/${id}`)).data;
+    }
+    async rejectRequestExtendBorrow(id) {
+        return (await this.api.put(`/reject-request-extend/${id}`)).data;
+    }
+    async acceptRequestExtendBorrow(id) {
+        return (await this.api.put(`/accept-request-extend/${id}`)).data;
+    }
 
 }
 export default new MuonService();

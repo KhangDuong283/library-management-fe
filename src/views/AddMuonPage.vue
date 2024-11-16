@@ -106,6 +106,7 @@
 
 <script>
 import docgiaService from "@/services/docgia.service";
+import muonService from "@/services/muon.service";
 import { useToast } from "vue-toastification";
 
 export default {
@@ -127,7 +128,16 @@ export default {
   methods: {
     async handleSubmit() {
       try {
-        console.log(this.form);
+        const data = {
+          maDocGia: this.form.readerId,
+          maSach: this.form.bookId,
+          ngayMuon: this.form.returnDate,
+        };
+
+        await muonService.create(data);
+        const toast = useToast();
+        toast.success("Đã thêm mượn sách thành công", { timeout: 1500 });
+        this.$router.push({ name: "muon-management" });
       } catch (error) {
         console.error("Lỗi khi thêm mượn sách:", error);
       }

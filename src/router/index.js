@@ -45,7 +45,6 @@ const routes = [
         component: HomePage,
         children: [
             {
-                index: true,
                 path: "muon-management",
                 name: "muon-management",
                 component: MuonManagement,
