@@ -8,7 +8,8 @@ import ForgotPassword from "@/components/ForgotPassword.vue";
 import HomePage from "@/views/HomePage.vue";
 import SachManagement from "@/views/SachManagement.vue";
 import MuonManagement from "@/views/MuonManagement.vue";
-import MuonHistory from "@/views/MuonHistory.vue";
+import MuonHistory from "@/views/AddMuonPage.vue";
+import AddMuonPage from "@/views/AddMuonPage.vue";
 
 const routes = [
     {
@@ -44,6 +45,7 @@ const routes = [
         component: HomePage,
         children: [
             {
+                index: true,
                 path: "muon-management",
                 name: "muon-management",
                 component: MuonManagement,
@@ -54,9 +56,9 @@ const routes = [
                 component: SachManagement,
             },
             {
-                path: "muon-history",
-                name: "muon-history",
-                component: MuonHistory,
+                path: "them-muon-sach",
+                name: "them-muon-sach",
+                component: AddMuonPage,
 
             }
         ]

@@ -1,6 +1,6 @@
 import createApiClient from "./api.service";
-class DocgiaService {
-    constructor(baseUrl = "/api/docgia") {
+class MuonService {
+    constructor(baseUrl = "/api/muon") {
         this.api = createApiClient(baseUrl);
     }
     async getAll() {
@@ -21,14 +21,9 @@ class DocgiaService {
     async delete(id) {
         return (await this.api.delete(`/${id}`)).data;
     }
-    async login(dienThoai, password) {
-        const data = { dienThoai, password };
-        const res = (await this.api.post(`/login`, data));
-        return res?.data;
-    }
-    async findByPhone(dienThoai) {
-        return (await this.api.get(`/phone/${dienThoai}`)).data;
+    async returnBook(id) {
+        return (await this.api.put(`/return/${id}`)).data;
     }
 
 }
-export default new DocgiaService();
+export default new MuonService();

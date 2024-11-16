@@ -12,9 +12,6 @@
     </div>
     <!-- Nút thêm sách mới -->
     <div class="flex justify-between items-center mb-4">
-      <v-btn color="primary" @click="addNewBook" v-if="role === `admin`"
-        >Thêm sách mới</v-btn
-      >
       <input
         v-model="searchQuery"
         type="text"
@@ -22,6 +19,10 @@
         class="ml-4 p-2 border rounded-md text-sm w-64 bg-gray-100"
         style="z-index: 10"
       />
+
+      <v-btn color="primary" @click="addNewBook" v-if="role === `admin`"
+        >Thêm sách mới</v-btn
+      >
     </div>
 
     <!-- Table danh sách các quyển sách -->
@@ -231,35 +232,14 @@ export default {
   computed: {
     filteredBooks() {
       return this.books.filter((book) => {
-        // Tìm kiếm theo ID nếu searchQuery là ID
-        if (book._id.toLowerCase().includes(this.searchQuery.toLowerCase())) {
-          return true;
-        }
-
-        // Tìm kiếm theo tên sách nếu searchQuery là tên sách
-        if (
-          book.tensach.toLowerCase().includes(this.searchQuery.toLowerCase())
-        ) {
-          return true;
-        }
-
-        // Tìm kiếm theo tên sách nếu searchQuery là tên tác giả
-        if (
-          book.tacgia.toLowerCase().includes(this.searchQuery.toLowerCase())
-        ) {
-          return true;
-        }
-
-        // Tìm kiếm theo tên sách nếu searchQuery là tên nhà xuất bản
-        if (
-          book.nhaxuatban.tennxb
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase())
-        ) {
-          return true;
-        }
-
-        return false;
+        const searchTerm = this.searchQuery.toLowerCase();
+        return (
+          book.tensach.toLowerCase().includes(searchTerm) ||
+          book.tacgia.toLowerCase().includes(searchTerm) ||
+          book.nhaxuatban.tennxb.toLowerCase().includes(searchTerm) ||
+          book.namxuatban.toString().includes(searchTerm) ||
+          book._id.includes(searchTerm)
+        );
       });
     },
   },

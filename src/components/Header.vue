@@ -5,7 +5,7 @@
         <v-row align="center" justify="space-between">
           <v-col cols="auto">
             <v-btn text class="text-white" @click="goToBorrowing">
-              <span class="font-bold text-2xl">Library Management</span>
+              <span class="font-bold text-xl">Quản lý thư viện</span>
             </v-btn>
           </v-col>
 
@@ -16,7 +16,7 @@
               v-if="role === 'admin'"
               text
               :class="{ 'v-btn--active': $route.path === '/muon-management' }"
-              class="text-white"
+              class="text-white font-bold"
               @click="goToBorrowing"
             >
               Quản lý mượn sách
@@ -27,7 +27,7 @@
               v-if="role === 'admin'"
               text
               :class="{ 'v-btn--active': $route.path === '/sach-management' }"
-              class="text-white"
+              class="text-white font-bold"
               @click="goToBooks"
             >
               Quản lý sách
@@ -38,7 +38,7 @@
               v-if="role === 'user'"
               text
               :class="{ 'v-btn--active': $route.path === '/sach-management' }"
-              class="text-white"
+              class="text-white font-bold"
               @click="goToBooks"
             >
               Thư viện sách
@@ -49,10 +49,21 @@
               v-if="role === 'user'"
               text
               :class="{ 'v-btn--active': $route.path === '/muon-history' }"
-              class="text-white"
+              class="text-white font-bold"
               @click="goToLendHistory"
             >
               Lịch sử mượn sách
+            </v-btn>
+
+            <!-- Thêm mượn sách -->
+            <v-btn
+              v-if="role === 'admin'"
+              text
+              :class="{ 'v-btn--active': $route.path === '/them-muon-sach' }"
+              class="text-white font-bold"
+              @click="goToAddMuonSach"
+            >
+              Thêm mượn sách
             </v-btn>
           </v-col>
 
@@ -124,6 +135,9 @@ export default {
     // Điều hướng đến Lịch sử mượn sách
     goToLendHistory() {
       this.$router.push("/muon-history");
+    },
+    goToAddMuonSach() {
+      this.$router.push("/them-muon-sach");
     },
     // Xử lý đăng xuất
     logout() {
