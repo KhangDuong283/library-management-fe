@@ -16,7 +16,7 @@
         v-model="searchQuery"
         type="text"
         placeholder="Tìm kiếm sách"
-        class="ml-4 p-2 border rounded-md text-sm w-64 bg-gray-100"
+        class="p-2 border rounded-md text-sm w-64 bg-gray-100"
         style="z-index: 10"
       />
 
@@ -34,6 +34,7 @@
           class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400"
         >
           <tr>
+            <th scope="col" class="px-6 py-3 text-center text-sm">Bìa sách</th>
             <th scope="col" class="px-6 py-3 text-center text-sm">Mã sách</th>
             <th scope="col" class="px-6 py-3 text-center text-sm">Tên sách</th>
             <th scope="col" class="px-6 py-3 text-center text-sm">Số quyển</th>
@@ -55,6 +56,13 @@
         </thead>
         <tbody>
           <tr v-for="book in filteredBooks" :key="book.id">
+            <td class="text-center">
+              <a-image
+                :src="book.imageUrl"
+                alt="Bìa sách"
+                style="height: 100px"
+              />
+            </td>
             <td
               @click="copyToClipboard(book._id, 'ID sách')"
               class="px-6 py-4 text-center cursor-pointer transform transition-all duration-300 hover:scale-105 hover:font-bold"

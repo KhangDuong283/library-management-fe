@@ -7,6 +7,10 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+// Ant Design Vue
+import Antd from 'ant-design-vue';
+import 'ant-design-vue/dist/reset.css';
+
 // Tailwind Css
 import './assets/style.css'
 
@@ -30,6 +34,7 @@ const app = createApp(App);
 
 app.use(router);
 app.use(vuetify);
+app.use(Antd);
 app.use(Toast, {
     position: POSITION.TOP_CENTER,
     timeout: 3000,

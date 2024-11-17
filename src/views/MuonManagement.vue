@@ -11,7 +11,7 @@
         v-model="searchQuery"
         type="text"
         placeholder="Tìm kiếm mượn trả"
-        class="ml-4 p-2 border rounded-md text-sm w-64 bg-gray-100"
+        class="p-2 border rounded-md text-sm w-64 bg-gray-100"
         style="z-index: 10"
       />
 

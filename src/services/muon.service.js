@@ -28,7 +28,6 @@ class MuonService {
         return (await this.api.put(`/extend/${id}`)).data;
     }
     async requestExtendBorrow(id) {
-        console.log(id);
         return (await this.api.put(`/request-extend/${id}`)).data;
     }
     async rejectRequestExtendBorrow(id) {

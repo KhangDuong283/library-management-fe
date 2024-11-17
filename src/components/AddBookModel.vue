@@ -7,6 +7,7 @@
     <div class="bg-white p-6 rounded-md shadow-lg w-96">
       <h2 class="text-xl font-bold mb-4">Thêm sách mới</h2>
       <form @submit.prevent="submitAdd">
+        <!-- Tên sách -->
         <div class="mb-4">
           <label for="tensach" class="block">Tên sách</label>
           <input
@@ -18,6 +19,7 @@
           />
         </div>
 
+        <!-- Nhà xuất bản -->
         <div class="mb-4">
           <label for="nhaxuatban" class="block">Nhà xuất bản</label>
           <select
@@ -35,6 +37,7 @@
           </select>
         </div>
 
+        <!-- Năm xuất bản và Số quyển -->
         <div class="flex mb-4 space-x-4">
           <div class="w-1/2">
             <label for="namxuatban" class="block">Năm xuất bản</label>
@@ -59,6 +62,7 @@
           </div>
         </div>
 
+        <!-- Tác giả -->
         <div class="mb-4">
           <label for="tacgia" class="block">Tác giả</label>
           <input
@@ -68,6 +72,26 @@
             class="w-full p-2 border rounded-md"
             required
           />
+        </div>
+
+        <!-- Thêm ảnh -->
+        <div class="mb-4">
+          <label for="image" class="block">Chọn ảnh</label>
+          <input
+            id="image"
+            type="file"
+            @change="handleImageChange"
+            class="w-full p-2 border rounded-md"
+            accept="image/*"
+          />
+          <div v-if="imagePreview" class="mt-2">
+            <p>Preview ảnh:</p>
+            <img
+              :src="imagePreview"
+              alt="Image Preview"
+              class="w-24 h-24 object-cover mt-2"
+            />
+          </div>
         </div>
 
         <div class="flex justify-between">
@@ -80,6 +104,9 @@
 </template>
 
 <script>
+import SachService from "@/services/sach.service"; // Đảm bảo đường dẫn chính xác
+import uploadService from "@/services/upload.service";
+
 export default {
   props: {
     isVisible: Boolean,
@@ -93,22 +120,56 @@ export default {
         namxuatban: "",
         soquyen: "",
         tacgia: "",
+        image: null, // Dữ liệu ảnh sẽ được lưu ở đây
       },
+      imagePreview: null, // Preview ảnh sẽ được lưu ở đây
     };
   },
   methods: {
     closeModal() {
-      this.$emit("close");
+      this.$emit("close"); // Đóng modal khi nhấn hủy
     },
-    submitAdd() {
-      this.$emit("add", this.newBook);
+
+    async submitAdd() {
+      try {
+        if (this.newBook.image) {
+          const imageData = await uploadService.uploadImage(this.newBook.image);
+          this.newBook.imageUrl = imageData.imageUrl;
+        }
+
+        console.log("newBook", this.newBook);
+
+        // Gửi đối tượng sách, bao gồm cả URL ảnh
+        // await SachService.create(this.newBook);
+
+        // Thông báo thêm sách thành công và reset form
+        this.$emit("add", this.newBook);
+        this.resetForm();
+      } catch (error) {
+        console.error("Lỗi khi thêm sách:", error);
+        alert("Có lỗi xảy ra khi thêm sách. Vui lòng thử lại.");
+      }
+    },
+
+    handleImageChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Tạo đường dẫn URL tạm thời để preview ảnh
+        this.imagePreview = URL.createObjectURL(file);
+        this.newBook.image = file; // Lưu ảnh vào đối tượng sách
+      }
+    },
+
+    resetForm() {
       this.newBook = {
         tensach: "",
         nhaxuatban: null,
         namxuatban: "",
         soquyen: "",
         tacgia: "",
+        image: null,
       };
+      this.imagePreview = null; // Reset preview ảnh
     },
   },
 };
