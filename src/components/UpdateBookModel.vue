@@ -99,7 +99,19 @@
 
         <div class="flex justify-between">
           <v-btn color="red darken-2" @click="closeModal">Hủy</v-btn>
-          <v-btn color="green darken-2" type="submit">Cập nhật</v-btn>
+          <v-btn
+            color="green darken-2"
+            type="submit"
+            :disabled="isUpdating"
+            class="flex items-center justify-center"
+          >
+            <template v-if="isUpdating">
+              <span
+                class="loader w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></span>
+            </template>
+            <template v-else> Cập nhật </template>
+          </v-btn>
         </div>
       </form>
     </div>
@@ -107,6 +119,8 @@
 </template>
 
 <script>
+import uploadService from "@/services/upload.service";
+
 export default {
   props: {
     isVisible: Boolean,
@@ -116,12 +130,14 @@ export default {
   data() {
     return {
       imagePreview: null, // Để lưu ảnh preview khi chọn ảnh mới
+      isUpdating: false,
     };
   },
   methods: {
     closeModal() {
       this.$emit("close");
     },
+
     handleImageChange(event) {
       const file = event.target.files[0];
       if (file) {
@@ -130,12 +146,25 @@ export default {
         this.book.image = file; // Lưu ảnh vào đối tượng sách
       }
     },
-    submitUpdate() {
-      if (this.book.image) {
-        this.book.imageUrl = this.imagePreview; // Cập nhật imageUrl cho book
-      }
 
-      this.$emit("update", this.book); // Gửi thông tin sách đã cập nhật
+    async submitUpdate() {
+      this.isUpdating = true;
+      try {
+        // Kiểm tra nếu có ảnh mới cần tải lên
+        if (this.book.image) {
+          const uploadedImage = await uploadService.uploadImage(
+            this.book.image
+          );
+          this.book.imageUrl = uploadedImage.imageUrl; // Cập nhật URL ảnh mới
+        }
+
+        // Gửi thông tin sách đã cập nhật
+        this.$emit("update", this.book);
+        this.isUpdating = false;
+      } catch (error) {
+        console.error("Lỗi khi cập nhật sách:", error);
+        alert("Có lỗi xảy ra khi cập nhật thông tin sách. Vui lòng thử lại.");
+      }
     },
   },
 };

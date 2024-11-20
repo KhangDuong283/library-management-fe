@@ -36,7 +36,7 @@ app.use(router);
 app.use(vuetify);
 app.use(Antd);
 app.use(Toast, {
-    position: POSITION.TOP_CENTER,
+    position: POSITION.TOP_LEFT,
     timeout: 3000,
     closeOnClick: true,
 });

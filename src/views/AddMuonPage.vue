@@ -107,6 +107,7 @@
 <script>
 import docgiaService from "@/services/docgia.service";
 import muonService from "@/services/muon.service";
+import sachService from "@/services/sach.service";
 import { useToast } from "vue-toastification";
 
 export default {
@@ -131,8 +132,19 @@ export default {
         const data = {
           maDocGia: this.form.readerId,
           maSach: this.form.bookId,
-          ngayMuon: this.form.returnDate,
+          ngayHenTra: this.form.returnDate,
+          // ngayMuon: new Date().toISOString().split("T")[0],
         };
+
+        const book = await sachService.get(data.maSach);
+        // console.log("Book:", book.soquyen);
+        if (book?.soquyen === 0) {
+          const toast = useToast();
+          toast.error("Sách bạn tìm đã hết", { timeout: 1500 });
+          return;
+        }
+
+        // console.log("Data to create:", data);
 
         await muonService.create(data);
         const toast = useToast();

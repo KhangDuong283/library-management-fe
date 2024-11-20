@@ -96,7 +96,19 @@
 
         <div class="flex justify-between">
           <v-btn color="red darken-2" @click="closeModal">Hủy</v-btn>
-          <v-btn color="green darken-2" type="submit">Thêm sách</v-btn>
+          <v-btn
+            color="green darken-2"
+            type="submit"
+            :disabled="isCreating"
+            class="flex items-center justify-center"
+          >
+            <template v-if="isCreating">
+              <span
+                class="loader w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></span>
+            </template>
+            <template v-else> Thêm sách </template>
+          </v-btn>
         </div>
       </form>
     </div>
@@ -123,6 +135,7 @@ export default {
         image: null, // Dữ liệu ảnh sẽ được lưu ở đây
       },
       imagePreview: null, // Preview ảnh sẽ được lưu ở đây
+      isCreating: false,
     };
   },
   methods: {
@@ -131,6 +144,7 @@ export default {
     },
 
     async submitAdd() {
+      this.isCreating = true;
       try {
         if (this.newBook.image) {
           const imageData = await uploadService.uploadImage(this.newBook.image);
@@ -144,6 +158,7 @@ export default {
 
         // Thông báo thêm sách thành công và reset form
         this.$emit("add", this.newBook);
+        this.isCreating = false;
         this.resetForm();
       } catch (error) {
         console.error("Lỗi khi thêm sách:", error);

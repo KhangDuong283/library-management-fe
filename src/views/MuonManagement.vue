@@ -2,7 +2,12 @@
   <div class="borrow-management-page p-4">
     <!-- Tiêu đề chính -->
     <div class="text-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Quản lý mượn trả</h1>
+      <h1 class="text-3xl font-bold text-gray-800" v-if="role === `admin`">
+        Quản lý mượn trả
+      </h1>
+      <h1 class="text-3xl font-bold text-gray-800" v-if="role === `user`">
+        Lịch sử mượn sách
+      </h1>
     </div>
 
     <div class="flex justify-between items-center mb-4" style="z-index: 10">
@@ -16,7 +21,7 @@
       />
 
       <!-- Nút Thêm -->
-      <div class="mb-4" style="z-index: 10">
+      <div class="mb-4" style="z-index: 10" v-if="role === `admin`">
         <button
           @click="goToAddMuonSachPage"
           class="bg-blue-500 text-white px-4 py-2 rounded-md"
@@ -207,7 +212,7 @@ export default {
     // Xử lý khi form được submit
     async handleSubmit() {
       try {
-        await MuonService.create(this.form); // Gọi API thêm mượn sách
+        await MuonService.create(this.form);
         this.closeModal(); // Đóng modal sau khi thêm
         this.fetchBorrowRecords(); // Cập nhật lại danh sách mượn trả
       } catch (error) {
@@ -315,14 +320,16 @@ export default {
   computed: {
     filteredBorrowRecords() {
       return this.borrowRecords.filter((record) => {
-        const searchTerm = this.searchQuery.toLowerCase();
+        const searchTerm = this.searchQuery?.toLowerCase() || "";
+
+        console.log(searchTerm);
         return (
-          record.docGiaInfo.hoLot.toLowerCase().includes(searchTerm) ||
-          record.docGiaInfo.ten.toLowerCase().includes(searchTerm) ||
-          record.sachInfo.tensach.toLowerCase().includes(searchTerm) ||
-          record.ngayMuon.toLowerCase().includes(searchTerm) ||
-          record.ngayTra.toLowerCase().includes(searchTerm) ||
-          this.getStatus(record).toLowerCase().includes(searchTerm)
+          record.docGiaInfo.hoLot?.toLowerCase()?.includes(searchTerm) ||
+          record.docGiaInfo.ten?.toLowerCase()?.includes(searchTerm) ||
+          record.sachInfo.tensach?.toLowerCase()?.includes(searchTerm) ||
+          record.ngayMuon?.toLowerCase()?.includes(searchTerm) ||
+          record.ngayTra?.toLowerCase()?.includes(searchTerm) ||
+          this.getStatus(record)?.toLowerCase().includes(searchTerm)
         );
       });
     },
