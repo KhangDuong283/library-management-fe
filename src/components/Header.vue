@@ -65,6 +65,17 @@
             >
               Thêm mượn sách
             </v-btn>
+
+            <!-- Đăng ký mượn sách -->
+            <v-btn
+              v-if="role === 'user'"
+              text
+              :class="{ 'v-btn--active': $route.path === '/them-muon-sach' }"
+              class="text-white font-bold"
+              @click="goToAddMuonSach"
+            >
+              Đăng ký mượn sách
+            </v-btn>
           </v-col>
 
           <!-- Hiển thị tên người dùng và nút logout -->

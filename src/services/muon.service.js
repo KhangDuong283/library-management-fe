@@ -36,6 +36,9 @@ class MuonService {
     async acceptRequestExtendBorrow(id) {
         return (await this.api.put(`/accept-request-extend/${id}`)).data;
     }
+    async choMuon(id) {
+        return (await this.api.put(`/cho-muon/${id}`)).data;
+    }
 
 }
 export default new MuonService();

@@ -23,6 +23,9 @@
       <v-btn color="primary" @click="addNewBook" v-if="role === `admin`"
         >Thêm sách mới</v-btn
       >
+      <v-btn color="primary" @click="registerBook" v-if="role === `user`"
+        >Đăng ký mượn sách</v-btn
+      >
     </div>
 
     <!-- Table danh sách các quyển sách -->
@@ -203,7 +206,7 @@ export default {
         let parseBook = JSON.parse(JSON.stringify(newBook));
         parseBook.manxb = parseBook.nhaxuatban._id;
         parseBook.nhaxuatban = null;
-        console.log(parseBook);
+        // console.log(parseBook);
         await SachService.create(parseBook);
         this.fetchBooks(); // Cập nhật lại danh sách sách
         this.closeAddBookModal();
@@ -221,6 +224,10 @@ export default {
       } catch (error) {
         console.error("Lỗi khi xóa sách:", error);
       }
+    },
+
+    async registerBook() {
+      console.log("Đăng ký mượn sách");
     },
 
     copyToClipboard(text, field) {

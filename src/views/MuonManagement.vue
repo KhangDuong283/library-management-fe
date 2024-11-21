@@ -78,7 +78,9 @@
             </td>
 
             <td class="px-6 py-4 text-center">
-              {{ formatTime(record.ngayHenTra) }}
+              <span v-if="getStatus(record) !== `Đã đăng ký mượn`">{{
+                formatTime(record.ngayHenTra)
+              }}</span>
             </td>
 
             <td class="px-6 py-4 text-center">
@@ -90,6 +92,8 @@
                   'text-red-600 font-bold': getStatus(record) === 'Trả muộn',
                   'text-blue-600 font-bold':
                     getStatus(record) === 'Yêu cầu gia hạn',
+                  'text-purple-600 font-bold':
+                    getStatus(record) === 'Đã đăng ký mượn',
                 }"
               >
                 {{ getStatus(record) }}
@@ -100,6 +104,18 @@
             </td>
 
             <td class="px-6 py-4 text-center" v-if="role === 'admin'">
+              <!-- Nút Đồng ý -->
+              <v-btn
+                v-if="getStatus(record) === 'Đã đăng ký mượn'"
+                small
+                color="blue"
+                @click="choMuon(record)"
+                style="font-size: 0.7rem; font-weight: bold"
+              >
+                Xác nhận <br />
+                đã đến nhận sách
+              </v-btn>
+
               <!-- Hiển thị nút "Duyệt trả sách" nếu trạng thái là Đang mượn hoặc Trả muộn -->
               <v-btn
                 small
@@ -142,7 +158,9 @@
               </div>
 
               <!-- Hiển thị trạng thái Đã xử lý nếu không khớp điều kiện -->
-              <span v-else class="text-gray-400">Đã xử lý</span>
+              <span v-if="getStatus(record) === `Đã trả`" class="text-gray-400"
+                >Đã xử lý</span
+              >
             </td>
 
             <td class="px-6 py-4 text-center" v-if="role === 'user'">
@@ -248,6 +266,10 @@ export default {
       if (record.status === "Yêu cầu gia hạn") {
         return "Yêu cầu gia hạn";
       }
+
+      if (record.status === "Đã đăng ký mượn") {
+        return "Đã đăng ký mượn";
+      }
       return record.status === "Đã trả" ? "Đã trả" : "Đang mượn";
     },
 
@@ -310,6 +332,16 @@ export default {
       try {
         const recordCopy = JSON.parse(JSON.stringify(record));
         await MuonService.acceptRequestExtendBorrow(recordCopy._id);
+        this.fetchBorrowRecords();
+      } catch (error) {
+        console.error("Lỗi khi duyệt trả sách:", error);
+      }
+    },
+
+    async choMuon(record) {
+      try {
+        const recordCopy = JSON.parse(JSON.stringify(record));
+        await MuonService.choMuon(recordCopy._id);
         this.fetchBorrowRecords();
       } catch (error) {
         console.error("Lỗi khi duyệt trả sách:", error);

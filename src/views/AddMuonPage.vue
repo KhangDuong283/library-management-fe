@@ -1,10 +1,41 @@
 <template>
   <div class="add-borrow-page p-4">
-    <h1 class="text-3xl font-bold text-center mb-6">Thêm mượn sách</h1>
+    <h1 class="text-3xl font-bold text-center mb-6" v-if="role === `user`">
+      Đăng ký mượn sách
+    </h1>
+    <h1 class="text-3xl font-bold text-center mb-6" v-else="role === `admin`">
+      Thêm mượn sách
+    </h1>
 
-    <div class="flex">
+    <div class="flex justify-center items-center">
+      <!-- Phần giữa cho role user: Form đăng ký mượn sách -->
+      <div class="w-1/2 p-4" v-if="role === `user`">
+        <form @submit.prevent="dangKyMuonSach">
+          <div class="mb-4">
+            <label for="bookId" class="block text-sm font-medium text-gray-700"
+              >Mã sách</label
+            >
+            <input
+              id="bookId"
+              v-model="form.bookId"
+              type="text"
+              placeholder="Nhập mã sách"
+              class="mt-1 p-2 border rounded-md w-full"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-blue-500 text-white py-2 rounded-md"
+          >
+            Đăng ký mượn sách
+          </button>
+        </form>
+      </div>
+
       <!-- Phần bên trái: Form thêm mượn sách -->
-      <div class="w-1/2 p-4">
+      <div class="w-1/2 p-4" v-if="role === `admin`">
         <form @submit.prevent="handleSubmit">
           <div class="mb-4">
             <label for="bookId" class="block text-sm font-medium text-gray-700"
@@ -61,7 +92,7 @@
       </div>
 
       <!-- Phần bên phải: Tìm độc giả -->
-      <div class="w-1/2 p-4">
+      <div class="w-1/2 p-4" v-if="role === `admin`">
         <div class="mb-4">
           <label
             for="phoneNumber"
@@ -123,6 +154,8 @@ export default {
       },
       searchPhone: "",
       readerInfo: null,
+      role: JSON.parse(localStorage.getItem("user")).role,
+      userId: JSON.parse(localStorage.getItem("user"))._id,
     };
   },
 
@@ -152,6 +185,32 @@ export default {
         this.$router.push({ name: "muon-management" });
       } catch (error) {
         console.error("Lỗi khi thêm mượn sách:", error);
+      }
+    },
+
+    async dangKyMuonSach() {
+      try {
+        const data = {
+          maDocGia: this.userId,
+          maSach: this.form.bookId,
+          ngayHenTra: this.form.returnDate,
+          status: "Đã đăng ký mượn",
+        };
+
+        const book = await sachService.get(data.maSach);
+        if (book?.soquyen === 0) {
+          const toast = useToast();
+          toast.error("Sách bạn tìm đã hết", { timeout: 1500 });
+          return;
+        }
+
+        const res = await muonService.create(data);
+        // console.log("Data to create:", res);
+        const toast = useToast();
+        toast.success("Đã đăng ký mượn sách thành công", { timeout: 1500 });
+        this.$router.push({ name: "muon-management" });
+      } catch (error) {
+        console.error("Lỗi khi đăng ký mượn sách:", error);
       }
     },
 
